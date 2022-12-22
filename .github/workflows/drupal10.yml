@@ -35,9 +35,6 @@ jobs:
       - name: Dump composer version
         run: composer --version
 
-      - name: Install dependencies
-        run: composer --verbose install
-
       - if: matrix.drupal-release == 'dev'
         run: composer --verbose require --no-update drupal/core-recommended:10.0.x-dev && composer --verbose require --no-update --dev drupal/core-dev:10.0.x-dev
 
