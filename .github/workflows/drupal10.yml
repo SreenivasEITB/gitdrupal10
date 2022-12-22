@@ -35,9 +35,6 @@ jobs:
       - name: Dump composer version
         run: composer --version
 
-      - name: Validate composer.json
-        run: composer --verbose validate
-
       - name: Install dependencies
         run: composer --verbose install
 
