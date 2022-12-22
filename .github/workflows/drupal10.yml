@@ -1,59 +1,64 @@
-name: CI
-
-on: [push]
-
-env:
-  COMPOSER_MEMORY_LIMIT: -1
-  SIMPLETEST_DB: sqlite://tmp/site.sqlite
-  SIMPLETEST_BASE_URL: "http://3.26.61.27:8080"
-
+name: Test
+on:
+  push:
+    branches: [ 8.x-2.x ]
+  pull_request:
+    branches: [ 8.x-2.x ]
+    
 jobs:
-  build:
-    runs-on: 'ubuntu-20.04'
+  testing:
+    name: Drupal ${{ matrix.drupal-core }} - PHP ${{ matrix.php-versions }}
+    runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        php-versions: ['8.1']
-        drupal-release: ['stable']
-        composer-channel: ['stable']
-    steps:
-      - name: Dump matrix context
-        env:
-          MATRIX_CONTEXT: ${{ toJSON(matrix) }}
-        run: echo "$MATRIX_CONTEXT"
+        drupal-core: ['9.3.x', '9.4.x']
+        php-versions: ['7.4', '8.0']
+steps:
+  - name: Checkout Drupal core
+    uses: actions/checkout@v2
+    with:
+      repository: drupal/drupal
+      ref: ${{ matrix.drupal-core }}
 
-      - name: Checkout
-        uses: actions/checkout@v2
+  - name: Checkout module
+    uses: actions/checkout@v2
+    with:
+      path: modules/commerce_product_saleprice
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php-versions }}
-          extensions: gd, pdo_sqlite
+  - name: Setup PHP, with composer and extensions
+    uses: shivammathur/setup-php@v2
+    with:
+      php-version: ${{ matrix.php-versions }}
+      coverage: none
 
-      - name: Update composer
-        run: composer --verbose self-update --${{ matrix.composer-channel }}
+  - name: Get composer cache directory
+    id: composercache
+    run: echo "::set-output name=dir::$(composer config cache-files-dir)"
 
-      - name: Dump composer version
-        run: composer --version
+  - name: Cache composer dependencies
+    uses: actions/cache@v2
+    with:
+      path: ${{ steps.composercache.outputs.dir }}
+      key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+      restore-keys: ${{ runner.os }}-composer-
 
-      - if: matrix.drupal-release == 'dev'
-        run: composer --verbose require --no-update drupal/core-recommended:10.0.x-dev && composer --verbose require --no-update --dev drupal/core-dev:10.0.x-dev
+  - name: Install Drupal core dependencies
+    run: |
+      composer --no-interaction --no-progress --prefer-dist --optimize-autoloader install
+  
+  - name: Install module dependencies
+    run: |
+      composer --no-interaction --no-progress require \
+        drupal/commerce
 
-      - if: matrix.drupal-release == 'dev'
-        run: composer --verbose update
+  - name: Install Coder module
+    run: |
+      composer --dev --no-interaction --no-progress require \
+        drupal/coder:8.3.13
 
-      - run: ./vendor/bin/drush site-install --verbose --yes --db-url=sqlite://tmp/site.sqlite
-
-      - run: ./vendor/bin/drush runserver $SIMPLETEST_BASE_URL &
-
-      - run: until curl -s $SIMPLETEST_BASE_URL; do true; done > /dev/null
-
-        # https://www.drupal.org/project/drupal/issues/3182653
-        # https://www.drupal.org/node/3176567
-      - if: ${{ matrix.php-versions == '8.1' }}
-        run: composer require phpspec/prophecy-phpunit:^2
-
-      - name: Run a single unit test to verify the testing setup.
-        run: ./vendor/bin/phpunit -c ./web/core ./web/core/modules/user/tests/src/Unit/UserAccessControlHandlerTest.php
-
-      - run: ./vendor/bin/drush
+  - name: Check coding standards
+    run: |
+      ./vendor/bin/phpcs --config-set installed_paths vendor/drupal/coder/coder_sniffer
+      ./vendor/bin/phpcs --standard=Drupal,DrupalPractice --extensions=php,module,install,js modules/commerce_product_saleprice
+You can find the complete workflow file in t
