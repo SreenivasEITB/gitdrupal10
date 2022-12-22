@@ -15,8 +15,6 @@ jobs:
         uses: appleboy/ssh-action@v0.1.2
         with:
           host: ${{secrets.EXAMINATR_HOST}}
-          username: ${{ secrets.EXAMINATR_USERNAME }}
-          password: ${{ secrets.EXAMINATR_PASSWORD }}
           script: |
             cd /var/www/examinatr-business-front-dev/
             git checkout .
