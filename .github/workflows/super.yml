@@ -9,7 +9,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Deploy NodeJS Examinatr Business Admin Portal Frontend Development
         uses: appleboy/ssh-action@v0.1.2
