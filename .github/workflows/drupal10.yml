@@ -4,8 +4,8 @@ on: [push]
 
 env:
   COMPOSER_MEMORY_LIMIT: -1
-  SIMPLETEST_DB: sqlite://tmp/site.sqlite
-  SIMPLETEST_BASE_URL: "http://15.207.14.10:8080"
+  SIMPLETEST_DB: sqlite://tmp
+  SIMPLETEST_BASE_URL: "http://3.26.61.27:8080"
 
 jobs:
   build:
