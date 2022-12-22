@@ -4,25 +4,16 @@ on: [push]
 
 env:
   COMPOSER_MEMORY_LIMIT: -1
-  SIMPLETEST_DB: sqlite://tmp
   SIMPLETEST_BASE_URL: "http://3.26.61.27:8080"
 
 jobs:
   build:
     runs-on: 'ubuntu-20.04'
     strategy:
-      fail-fast: false
       matrix:
         php-versions: ['8.1']
         drupal-release: ['stable']
         composer-channel: ['stable']
-        include:
-          - php-versions: '8.1'
-            drupal-release: dev
-            composer-channel: stable
-          - php-versions: '8.1'
-            drupal-release: stable
-            composer-channel: snapshot
     steps:
       - name: Dump matrix context
         env:
