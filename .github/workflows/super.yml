@@ -1,0 +1,24 @@
+# This workflow will do a clean install of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Examinatr Business Frontend Development
+
+on:
+  push:
+    branches: [ dev ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy NodeJS Examinatr Business Admin Portal Frontend Development
+        uses: appleboy/ssh-action@v0.1.2
+        with:
+          host: ${{secrets.EXAMINATR_HOST}}
+          username: ${{ secrets.EXAMINATR_USERNAME }}
+          password: ${{ secrets.EXAMINATR_PASSWORD }}
+          script: |
+            cd /var/www/examinatr-business-front-dev/
+            git checkout .
+            git pull
+            pm2 reload ecosystem.config.js --env dev
