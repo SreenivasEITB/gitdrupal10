@@ -5,7 +5,7 @@ on: [push]
 env:
   COMPOSER_MEMORY_LIMIT: 1
   SIMPLETEST_DB: "pgsql://wktgbxmy_Azure_drupal:V9c!2vyb.[!!@127.0.0.1/drupal8alt"
-  SIMPLETEST_BASE_URL: "http://3.26.61.27:8080"
+  SIMPLETEST_BASE_URL: "3.26.61.27:8080"
 
 jobs:
   build:
